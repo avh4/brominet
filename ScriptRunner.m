@@ -12,6 +12,7 @@
 #import "TouchSynthesis.h"
 #import "NSObject+ClassName.h"
 #import "Foundation/Foundation.h"
+#import "QuartzCore/QuartzCore.h"
 
 const float SCRIPT_RUNNER_INTER_COMMAND_DELAY = 0.0;
 const float MAX_WAIT_ATTEMPTS = 60;
@@ -188,6 +189,31 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 	printf("=== outputView\n");
 	
 	return [[UIApplication sharedApplication] xmlDescription];
+}
+
+//
+// outputViewImage
+//
+// This command outputs a rendered PNG of the current keyWindow, to a
+// file or stdout.
+//
+// Required parameter:
+//
+- (NSData*) outputViewImage: (NSDictionary *) command  {
+	printf("=== outputViewImage\n");
+
+  UIWindow *window = [UIApplication sharedApplication].keyWindow;
+
+  // Draw the window into an image buffer
+  // From http://stackoverflow.com/questions/788662/rendering-uiview-with-its-children-iphone-sdk
+  UIGraphicsBeginImageContext(window.bounds.size);
+  [window.layer renderInContext:UIGraphicsGetCurrentContext()];
+  UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  // Convert the image data to PNG
+  NSData *pngData = UIImagePNGRepresentation(image);
+  return pngData;
 }
 
 //
