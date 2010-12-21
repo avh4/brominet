@@ -206,8 +206,12 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 
   // Draw the window into an image buffer
   // From http://stackoverflow.com/questions/788662/rendering-uiview-with-its-children-iphone-sdk
-  UIGraphicsBeginImageContext(window.bounds.size);
-  [window.layer renderInContext:UIGraphicsGetCurrentContext()];
+  CGFloat statusBarOffset = [UIScreen mainScreen].applicationFrame.size.height
+    - window.bounds.size.height;
+  UIGraphicsBeginImageContext([UIScreen mainScreen].applicationFrame.size);
+  CGContextRef context = UIGraphicsGetCurrentContext();
+  CGContextTranslateCTM(context, 0, statusBarOffset);
+  [window.layer renderInContext:context];
   UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
 
