@@ -13,5 +13,7 @@
 }
 
 - (NSString*)runCommandStep:(NSData*)command;
++ (NSData*)renderView:(UIView*)view withRect:(CGRect)frame;
++ (NSData*)renderView:(UIView*)view;
 
 @end

@@ -199,25 +199,52 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 //
 // Required parameter:
 //
-- (NSData*) outputViewImage: (NSDictionary *) command  {
+- (NSData*)outputViewImage:(NSDictionary*)command  {
 	printf("=== outputViewImage\n");
 
   UIWindow *window = [UIApplication sharedApplication].keyWindow;
 
-  // Draw the window into an image buffer
-  // From http://stackoverflow.com/questions/788662/rendering-uiview-with-its-children-iphone-sdk
   CGFloat statusBarOffset = [UIScreen mainScreen].applicationFrame.size.height
     - window.bounds.size.height;
-  UIGraphicsBeginImageContext([UIScreen mainScreen].applicationFrame.size);
+  CGRect frame = [UIScreen mainScreen].applicationFrame;
+  frame.origin.x = 0;
+  frame.origin.y = -statusBarOffset;
+  return [ScriptRunner renderView:window withRect:frame];
+}
+
+//
+// renderView:withRect:
+//
+// This is a helper method inteded to be used by applications using Brominet
+// to render an UIView object an return a PNG data object
+//
+// See also: renderView:
+//
++ (NSData*)renderView:(UIView*)view withRect:(CGRect)frame {
+  // Draw the window into an image buffer
+  // From http://stackoverflow.com/questions/788662/rendering-uiview-with-its-children-iphone-sdk
+  UIGraphicsBeginImageContext(frame.size);
   CGContextRef context = UIGraphicsGetCurrentContext();
-  CGContextTranslateCTM(context, 0, statusBarOffset);
-  [window.layer renderInContext:context];
+  CGContextTranslateCTM(context, -frame.origin.x, -frame.origin.y);
+  [view.layer renderInContext:context];
   UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
 
   // Convert the image data to PNG
   NSData *pngData = UIImagePNGRepresentation(image);
   return pngData;
+}
+
+//
+// renderView:
+//
+// This is a helper method inteded to be used by applications using Brominet
+// to render an UIView object an return a PNG data object
+//
+// See also: renderView:withRect:
+//
++ (NSData*)renderView:(UIView*)view {
+  return [ScriptRunner renderView:view withRect:[view bounds]];
 }
 
 //
