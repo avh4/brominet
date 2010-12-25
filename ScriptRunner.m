@@ -489,7 +489,7 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 	 errorDescription:nil];
 
 	NSString *commandName = [[parsed objectForKey:@"command"] stringByAppendingString:@":"];
-	NSLog(commandName);
+	NSLog(@"%@", commandName);
 
 	id appDelegate = [[UIApplication sharedApplication] delegate];
 	SEL selector = NSSelectorFromString(commandName);
