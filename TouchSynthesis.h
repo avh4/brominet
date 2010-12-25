@@ -23,6 +23,7 @@
 
 - (id)initInView:(UIView *)view;
 - (id)initInView:(UIView *)view hitTest:(BOOL)hitTest;
+- (id)initInWindow:(UIWindow *)window frame:(CGRect)frameInWindow;
 - (void)setPhase:(UITouchPhase)phase;
 - (void)setLocationInWindow:(CGPoint)location;
 - (void)moveLocationInWindow;

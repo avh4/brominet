@@ -72,6 +72,35 @@
 }
 
 //
+// initInWindow:frame:
+//
+// Creats a UITouch, centered on the specified frame, in the specified window.
+// Determines the target view by performing a hit test on the specified window.
+//
+- (id)initInWindow:(UIWindow *)window frame:(CGRect)frameInWindow
+{
+	self = [super init];
+	if (self != nil)
+	{
+		_tapCount = 1;
+		_locationInWindow = CGPointMake(
+			frameInWindow.origin.x + 0.5 * frameInWindow.size.width,
+			frameInWindow.origin.y + 0.5 * frameInWindow.size.height);
+		_previousLocationInWindow = _locationInWindow;
+
+		UIView *target = [window hitTest:_locationInWindow withEvent:nil];
+
+		_window = [window retain];
+		_view = [target retain];
+		_phase = UITouchPhaseBegan;
+		_touchFlags._firstTouchForView = 1;
+		_touchFlags._isTap = 1;
+		_timestamp = [NSDate timeIntervalSinceReferenceDate];
+	}
+	return self;
+}
+
+//
 // setPhase:
 //
 // Setter to allow access to the _phase member.
