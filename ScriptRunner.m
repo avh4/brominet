@@ -45,6 +45,24 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 }
 
 //
+// performTouchesBeganInView:
+//
+// Synthesize a touchesBegan event in the center of the specified view.
+//
+- (void)performTouchesBeganInView:(UIView *)view
+{
+	UITouch *touch = [[UITouch alloc] initInView:view];
+	UIEvent *event = [[UIEvent alloc] initWithTouch:touch];
+	NSSet *touches = [[NSMutableSet alloc] initWithObjects:&touch count:1];
+
+	[touch.view touchesBegan:touches withEvent:event];
+
+	[event release];
+	[touches release];
+	[touch release];
+}
+
+//
 // performLeftSwipeInView:
 //
 // swipe to the LEFT
@@ -286,6 +304,42 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 	UIView *view = [views objectAtIndex:0];
 	
 	[self performTouchInView:view hitTest:hitTest];
+	return @"pass";
+}
+
+//
+// simulateTouchesBegan
+//
+// Performs a synthesized touch down in a single view selected
+// by a given XPath query.
+//
+// Required parameters:
+//	viewXPath (search for a view matching this XPath)
+//
+- (NSString*) simulateTouchesBegan: (NSDictionary *) command  {
+	NSString *viewXPath = [command objectForKey:@"viewXPath"];
+	if (viewXPath == nil)
+	{
+		fprintf(stderr, "### Command 'simulateTouchesBegan' requires 'viewXPath' parameter.\n");
+		return @"fail";
+	}
+
+	printf("=== simulateTouchesBegan\n    viewXPath:\n        %s\n",
+		   [viewXPath cStringUsingEncoding:NSUTF8StringEncoding]);
+
+	NSArray *views = [self viewsForXPath:viewXPath];
+	if([views count] != 1)
+	{
+		fprintf(
+				stderr,
+				"### 'viewXPath' for command 'simulateTouchesBegan' selected %d nodes, where exactly 1 is required.\n",
+				[views count]);
+		return @"fail";
+	}
+
+	UIView *view = [views objectAtIndex:0];
+
+	[self performTouchesBeganInView:view];
 	return @"pass";
 }
 
