@@ -13,6 +13,7 @@
 #import "NSObject+ClassName.h"
 #import "Foundation/Foundation.h"
 #import "QuartzCore/QuartzCore.h"
+#import <OpenGLES/ES2/gl.h>
 
 const float SCRIPT_RUNNER_INTER_COMMAND_DELAY = 0.0;
 const float MAX_WAIT_ATTEMPTS = 60;
@@ -233,8 +234,8 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 //
 // renderView:withRect:
 //
-// This is a helper method inteded to be used by applications using Brominet
-// to render an UIView object an return a PNG data object
+// This is a helper method intended to be used by applications using Brominet
+// to render a UIView object and return a PNG data object
 //
 // See also: renderView:
 //
@@ -256,13 +257,70 @@ const float BACKBUTTON_WAIT_DELAY = 0.75;
 //
 // renderView:
 //
-// This is a helper method inteded to be used by applications using Brominet
-// to render an UIView object an return a PNG data object
+// This is a helper method intended to be used by applications using Brominet
+// to render a UIView object and return a PNG data object
 //
 // See also: renderView:withRect:
 //
 + (NSData*)renderView:(UIView*)view {
   return [ScriptRunner renderView:view withRect:[view bounds]];
+}
+
+//
+// renderGlView:
+//
+// This is a helper method intended to be used by applications using Brominet
+// to render the OpenGLES buffer and return a PNG data object
+//
++ (NSData*)renderGlView:(UIView*)view {
+  CGRect frame = view.bounds;
+  int w = (int)frame.size.width;
+  int h = (int)frame.size.height;
+  NSInteger myDataLength = w * h * 4;
+
+  // allocate array and read pixels into it.
+  GLubyte *buffer = (GLubyte *) malloc(myDataLength);
+  glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+  // gl renders “upside down” so swap top to bottom into new array.
+  // there’s gotta be a better way, but this works.
+  GLubyte *buffer2 = (GLubyte *) malloc(myDataLength);
+  for(int y = 0; y < h; y++)
+  {
+    for(int x = 0; x < w * 4; x++)
+    {
+      buffer2[(h - 1 - y) * w * 4 + x] = buffer[y * 4 * w + x];
+    }
+  }
+
+  free(buffer);
+  buffer = NULL;
+
+  // make data provider with data.
+  CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, buffer2, myDataLength, NULL);
+
+  // prep the ingredients
+  int bitsPerComponent = 8;
+  int bitsPerPixel = 32;
+  int bytesPerRow = 4 * w;
+  CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+  CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
+  CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+
+  // make the cgimage
+  CGImageRef imageRef = CGImageCreate(w, h, bitsPerComponent, bitsPerPixel, bytesPerRow,
+    colorSpaceRef, bitmapInfo, provider, NULL, NO, renderingIntent);
+
+  CGColorSpaceRelease(colorSpaceRef);
+  CGDataProviderRelease(provider);
+
+  // then make the uiimage from that
+  UIImage *myImage = [UIImage imageWithCGImage:imageRef];
+  CGImageRelease(imageRef);
+
+  // Convert the image data to PNG
+  NSData *pngData = UIImagePNGRepresentation(myImage);
+  return pngData;
 }
 
 //
